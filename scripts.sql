@@ -110,9 +110,133 @@ ALTER:
 	+ rename of column:
 		alter table employees
 		rename column name to ho_ten;
+	+ drop column:
+		alter table employees
+		drop column email;
 create table timekeeping (
 	id int auto_increment,
 	time datetime not null,
 	employee_id int not null,
 	primary key (id)
 );
+
+TRUNCATE:
+- delete all data.
+- truncate table employees;
+
+Phân biệt truncate và delete:
+- Truncate: Xóa tất cả dữ liệu của bảng chứ không thể dùng cho từng record. Khi chạy lệnh, SQL sẽ xóa hết dữ liệu của bảng và reset transaction log.
+- Delete: xóa dữ liệu trong bảng và giữ lại data trong transaction log.
+
+7 stages of sql order of execution:
+1. From/Join
+2. Where
+3. Group by
+4. Having
+5. Select
+6. Order by
+7. Limit/Offset
+
+
+TCL:
+start transaction;
+delete from employees;
+rollback;
+
+start transaction;
+delete from employees where id = 3;
+savepoint sp1;
+delete from employees where id = 4;
+rollback to savepoint sp1;
+commit;
+
+Tính cô lập:
+Read Uncommitted: TA đọc được kết quả của TB khi mà chưa commit.
+
+set transaction isolation level read uncommitted
+start transaction;
+...
+commit;
+
+=> problem: read dirty
+=> Buggy
+
+Read Committed: Chỉ đọc dữ liệu đã được commit.
+
+set transaction isolation level read committed
+start transaction;
+...
+commit;
+
+Example:
+
+set transaction isolation level read committed
+
+select * from account_balance where account_number = 2;
+-- do something (before T1 commit, balance[2] = 150)
+select * from account_balance where account_number = 2;
+-- Sometimes, it does wrong here (after T1 commit, balance[2] = 160)
+
+commit;
+
+Repeatable Read: Trả về cùng một kết quả sau các lần đọc.
+
+set transaction isolation level repeatable read; (default isolation)
+
+Trước khi T2 commit thì các lần đọc là như nhau kể cả khi T1 trước và sau khi commit.
+=> phantom read: Khi thực hiện query dạng range (between), có thể sẽ xuất hiện thêm/mất row do một transaction khác thêm/bớt row trong cái range đó và commit.
+
+Serializable:
+- solves the phantom read.
+- Thực hiện cơ chế lock để đảm bảo thứ tự.
+set transaction isolation level serializable;
+
+Locking:
+
+Shared: Allow to read but lock to write
+Exclusive: Lock to read and write.
+
+S * S = success
+S * X = reject
+X * S = reject
+X * X = reject
+
+select * from account_balance where account_number = 4 for share;
+
+
+display info:   select thread_id, index_name, lock_type, lock_mode, lock_status, lock_data
+		from performance_schema.data_locks
+		where object_name = 'account_balance';
+
+Global Lock:
+Table Lock:
+Row Level:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
