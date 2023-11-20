@@ -212,14 +212,58 @@ Global Lock:
 Table Lock:
 Row Level:
 
+SQL Execution:
 
+1. send SQL statement: 
+*Relational Engine
+2. Command Parser: Build ra cây truy vấn ->
+3. Query Optimizer: Đưa ra các chiến lược thực thi, tính toán và đưa ra chiến lược có cost thấp nhất và xóa các plan còn lại.
+4. Query Executor: Thao tác với storage engine
+*Storage Engine: Thực hiện query
+5. Access Methods: Nhận được query và phân biệt read query và write query
+- Read query: Forward sang Buffer Manager, nếu không có thì sẽ lấy data dưới disk
+- Write query: Forward sang Transaction Manager, quản lý các tính chất của ACID, nếu có yêu cầu Lock thì sẽ gọi xuống Lock Manager.
 
+SQL execution order:
+1. From
+2. Join
+3. On
+4. Where
+5. Group by
+6. Having
+7. Select
+8. Order by
+9. Limit
 
+Execution Plan:
+- Là một mô tả từng bước một mà DB thực hiện query -> đánh giá DB thực hiện nhanh chậm ở đâu.
+EXPLAIN: Lấy các thông tin cơ bản, dừng lại ở bước chọn ra plan có cost nhỏ nhất (Query Optimizer)
+ANALYZE: Lấy các thông tin tiết, thực hiện đầy đủ các bước.
+BUFFERS: Thông tin của cache hit or miss. (display)
+FORMAT JSON: reformat output
+Example: EXPAIN (ANALYZE, BUFFERS, FORMAT JSON) <Query>
 
+Những kiểu access vào dữ liệu:
+- Sequetial Scan: Quét toàn bộ bảng dữ liệu gốc và ko dùng index.
+- Index scan: Sử dụng index để scan.
+- Index only scan: Chỉ lấy dữ liệu ở trong index.
+- Bitmap Index Scan + Bitmap Heap Scan: (postgres) Do cách tổ chức dữ liệu của postgre và mysql khác nhau, Sử dụng index -> gen ra cấu trúc dữ liệu là bitmap -> kết hợp được nhiều index với nhau.
 
+Index name: 
+Index Cond: điều kiện trên index
+Estimate fields: Ước tính
+startup cost: Mất bao nhiêu chi phí để lấy được record đầu tiên.
+total cost: Chi phí của cả quá trình để lấy tất cả record.
+Plan row: Dự kiến có bao nhiều record được trả ra trong operation
+Plan width: 
+Actual value Fields: thông số thực
+Actual Startup Time: Thời gian để lấy được record đầu tiên.
+Actual Total Time: Tổng thời gian để lấy tất cả record.
+Actual Rows: Số rows được trả về
+Actual Loops: Số lần thực hiện operation.
 
-
-
+Buffer fields:
+Shared Hit Blocks: số blocks được đọc trong buffer.
 
 
 
